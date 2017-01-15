@@ -1,0 +1,10 @@
+const String CURRENT_VERSION = '0.0.0';
+const String EVENT = 'event';
+const String GET = 'get';
+const String KEY = 'key';
+const String METHOD = 'method';
+const String RETURN_ID = 'return-id';
+const String SET = 'set';
+const String STORE = 'store';
+const String VALUE = 'value';
+const String VERSION = 'version';
