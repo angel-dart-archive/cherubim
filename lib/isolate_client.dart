@@ -109,8 +109,8 @@ class IsolateClient implements Client {
       switch (response.statusCode) {
         case status.OK:
           if (!response.body.containsKey('result'))
-            throw new CherubimException(
-                'The server reported a successful operation, but did not return any value.');
+            completer.completeError(new CherubimException(
+                'The server reported a successful operation, but did not return any value.'));
           completer.complete(response.body['result']);
           break;
         case status.CREATED:

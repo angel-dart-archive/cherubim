@@ -2,6 +2,10 @@ import 'dart:async';
 import 'package:pool/pool.dart';
 import 'adapter.dart';
 import 'request.dart';
+import 'request_method.dart' as method;
+import 'response_impl.dart';
+import 'response_status.dart' as status;
+import 'store.dart';
 import 'user.dart';
 
 /// A lightweight caching system for Dart.
@@ -9,6 +13,7 @@ class Server {
   final List<Adapter> _adapters = [];
   Pool _pool;
   bool _running = false;
+  final Store _store = new Store();
 
   /// Initializes a Cherubim server.
   ///
@@ -47,12 +52,51 @@ class Server {
   /// Handles an incoming [request] from a specific [user].
   Future handleRequest(Request request, User user) async {
     var resx = await _pool.request();
-    // TODO: Handle requests
-    resx.release();
+
+    void sendMalformed() {
+      user.send(new ResponseImpl(
+          statusCode: status.MALFORMED, requestId: request.id));
+    }
+
+    try {
+      // TODO: Authorization
+      switch (request.method) {
+        case method.GET:
+          if (request.metaData['key'] is String) {
+            var key = request.metaData['key'];
+            user.send(new ResponseImpl(
+                statusCode: status.OK,
+                requestId: request.id,
+                body: {'result': _store.get(key)}));
+          } else
+            sendMalformed();
+          break;
+        case method.EXISTS:
+          if (request.metaData['key'] is String) {
+            var key = request.metaData['key'];
+            user.send(new ResponseImpl(
+                statusCode:
+                    _store.exists(key) ? status.FOUND : status.NOT_FOUND,
+                requestId: request.id));
+          } else
+            sendMalformed();
+          break;
+        default:
+          sendMalformed();
+          break;
+      }
+    } catch (e) {
+      user.send(new ResponseImpl(
+          statusCode: status.SERVER_ERROR, requestId: request.id));
+    } finally {
+      resx.release();
+    }
   }
 
   /// Sends a real-time message to all connected clients.
   void broadcast(String key, value) {
-    // TODO: Broadcast
+    var response = new ResponseImpl(
+        statusCode: status.BROADCAST, body: {'key': key, 'value': value});
+    _adapters.forEach((a) => a.broadcast(response));
   }
 }

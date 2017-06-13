@@ -18,18 +18,20 @@ main() async {
   var server = new cherubim.Server(adapters: [isolateAdapter]);
   int alive = 3;
 
-  var onDie = new ReceivePort()..listen((_) {
-    print('An instance died. RIP...');
+  var onDie = new ReceivePort()
+    ..listen((_) {
+      print('An instance died. RIP...');
 
-    if (--alive == 0) {
-      print('All instances have crashed! Shutting down...');
-      Isolate.current.kill();
-    }
-  });
+      if (--alive == 0) {
+        print('All instances have crashed! Shutting down...');
+        Isolate.current.kill();
+      }
+    });
 
   print('Spawning $nInstances instance(s)');
   for (int i = 0; i < nInstances; i++) {
-    Isolate.spawn(isolateMain, [i, isolateAdapter.receivePort.sendPort], onExit: onDie.sendPort);
+    Isolate.spawn(isolateMain, [i, isolateAdapter.receivePort.sendPort],
+        onExit: onDie.sendPort);
   }
 
   server.start();
@@ -47,10 +49,10 @@ void isolateMain(List args) {
     app.get('/', () async {
       try {
         var hits =
-            await client.increment('hits', timeout: new Duration(seconds: 10));
+            await client.get('hits', timeout: new Duration(seconds: 10));
         return {'hits': hits};
-      } on TimeoutException catch (e) {
-        throw new AngelHttpException(e, message: e.message);
+      } catch (e) {
+        throw new AngelHttpException(e, message: e.toString());
       }
     });
 
