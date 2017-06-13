@@ -1,9 +1,7 @@
-import 'dart:async';
-import 'endpoint.dart';
-import 'message.dart';
+import 'response.dart';
 
+/// Represents a client trying to access the server.
 abstract class User {
-  String get id;
-  Endpoint get endpoint;
-  Stream<Message> get onMessage;
+  /// Sends a [response] to the user.
+  void send(Response response);
 }

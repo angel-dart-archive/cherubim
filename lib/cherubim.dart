@@ -1,8 +1,7 @@
-library cherubim.dart;
-
-export 'src/endpoint.dart';
-export 'src/message.dart';
-export 'src/message_parser.dart';
+export 'src/adapter.dart';
+export 'src/client.dart';
+export 'src/request.dart';
+export 'src/response.dart';
 export 'src/server.dart';
 export 'src/store.dart';
 export 'src/user.dart';
