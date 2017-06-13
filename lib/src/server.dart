@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:pool/pool.dart';
 import 'adapter.dart';
 import 'request.dart';
@@ -67,7 +68,19 @@ class Server {
             user.send(new ResponseImpl(
                 statusCode: status.OK,
                 requestId: request.id,
-                body: {'result': _store.get(key)}));
+                body: {'result': JSON.encode(_store.get(key))}));
+          } else
+            sendMalformed();
+          break;
+        case method.SET:
+          if (request.metaData['key'] is String &&
+              request.metaData.containsKey('value')) {
+            var key = request.metaData['key'];
+            var value = request.metaData['value'];
+            user.send(new ResponseImpl(
+                statusCode: status.OK,
+                requestId: request.id,
+                body: {'result': JSON.encode(_store.set(key, value))}));
           } else
             sendMalformed();
           break;
@@ -78,6 +91,60 @@ class Server {
                 statusCode:
                     _store.exists(key) ? status.FOUND : status.NOT_FOUND,
                 requestId: request.id));
+          } else
+            sendMalformed();
+          break;
+        case method.INCREMENT:
+          if (request.metaData['key'] is String) {
+            var key = request.metaData['key'];
+            user.send(new ResponseImpl(
+                statusCode: status.OK,
+                requestId: request.id,
+                body: {'result': JSON.encode(_store.increment(key))}));
+          } else
+            sendMalformed();
+          break;
+        case method.DECREMENT:
+          if (request.metaData['key'] is String) {
+            var key = request.metaData['key'];
+            user.send(new ResponseImpl(
+                statusCode: status.OK,
+                requestId: request.id,
+                body: {'result': JSON.encode(_store.decrement(key))}));
+          } else
+            sendMalformed();
+          break;
+        case method.DELETE:
+          if (request.metaData['key'] is String) {
+            var key = request.metaData['key'];
+            user.send(new ResponseImpl(
+                statusCode: status.OK,
+                requestId: request.id,
+                body: {'result': JSON.encode(_store.delete(key))}));
+          } else
+            sendMalformed();
+          break;
+        case method.LIST_ADD:
+          if (request.metaData['key'] is String &&
+              request.metaData.containsKey('value')) {
+            var key = request.metaData['key'];
+            var value = request.metaData['value'];
+            user.send(new ResponseImpl(
+                statusCode: status.OK,
+                requestId: request.id,
+                body: {'result': JSON.encode(_store.listAdd(key, value))}));
+          } else
+            sendMalformed();
+          break;
+        case method.LIST_REMOVE:
+          if (request.metaData['key'] is String &&
+              request.metaData.containsKey('value')) {
+            var key = request.metaData['key'];
+            var value = request.metaData['value'];
+            user.send(new ResponseImpl(
+                statusCode: status.OK,
+                requestId: request.id,
+                body: {'result': JSON.encode(_store.listRemove(key, value))}));
           } else
             sendMalformed();
           break;

@@ -49,7 +49,18 @@ void isolateMain(List args) {
     app.get('/', () async {
       try {
         var hits =
-            await client.get('hits', timeout: new Duration(seconds: 10));
+            await client.increment('hits', timeout: new Duration(seconds: 10));
+
+        // Kill this instance after 10 seconds.
+        //
+        // This is just for the sake of this example, to force the server to eventually
+        // run all instances.
+        new Timer(new Duration(seconds: 10), () {
+          Isolate.current.kill();
+        });
+
+        // Print a message just to prove that it's working in every instance.
+        print('Instance #$id incremented hits to $hits');
         return {'hits': hits};
       } catch (e) {
         throw new AngelHttpException(e, message: e.toString());

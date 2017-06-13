@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:isolate';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
@@ -111,7 +112,7 @@ class IsolateClient implements Client {
           if (!response.body.containsKey('result'))
             completer.completeError(new CherubimException(
                 'The server reported a successful operation, but did not return any value.'));
-          completer.complete(response.body['result']);
+          completer.complete(JSON.decode(response.body['result']));
           break;
         case status.CREATED:
           completer.complete(true);
@@ -139,7 +140,7 @@ class IsolateClient implements Client {
   }
 
   @override
-  Future<T> get<T>(String key, {Duration timeout}) {
+  Future<T> pull<T>(String key, {Duration timeout}) {
     var c = new Completer<T>();
     _send(new RequestImpl(method: method.GET, metaData: {'key': key}), c,
         timeout);
@@ -147,7 +148,7 @@ class IsolateClient implements Client {
   }
 
   @override
-  Future<bool> set<T>(String key, T value, {Duration timeout}) {
+  Future<bool> push<T>(String key, T value, {Duration timeout}) {
     var c = new Completer<T>();
     _send(
         new RequestImpl(

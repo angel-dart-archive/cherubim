@@ -13,10 +13,10 @@ abstract class Client {
   Future close();
 
   /// Read the value of a key.
-  Future<T> get<T>(String key, {Duration timeout});
+  Future<T> pull<T>(String key, {Duration timeout});
 
   /// Assign a value to a key.
-  Future<bool> set<T>(String key, T value, {Duration timeout});
+  Future<bool> push<T>(String key, T value, {Duration timeout});
 
   /// Determine if a key exists.
   Future<bool> exists(String key, {Duration timeout});
