@@ -14,7 +14,7 @@ Supports:
 # Usage
 There is only one `Server` class; however, there are multiple `Adapter` classes.
 An adapter does just what its name says - it adapts input from an arbitrary source into
-a stream of [Cherubim protocol](PROTOCOL.md) requests. The following adapters are available:
+a stream of [Cherubim protocol](../PROTOCOL.md) requests. The following adapters are available:
 * [x] Isolate messaging (`SendPort` and `ReceivePort`)
 * [ ] TCP Sockets
 * [ ] WebSockets
