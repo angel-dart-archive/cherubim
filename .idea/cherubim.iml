@@ -2,9 +2,16 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/angel_cherubim/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/angel_cherubim/build" />
+      <excludeFolder url="file://$MODULE_DIR$/angel_cherubim/packages" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/cherubim/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/cherubim/build" />
+      <excludeFolder url="file://$MODULE_DIR$/cherubim/example/counter/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/cherubim/example/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/cherubim/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/counter/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/packages" />
       <excludeFolder url="file://$MODULE_DIR$/packages" />

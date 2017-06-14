@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Counter Example" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
-    <option name="filePath" value="$PROJECT_DIR$/example/counter/main.dart" />
+    <option name="filePath" value="$PROJECT_DIR$/cherubim/example/counter/main.dart" />
     <option name="workingDirectory" value="$PROJECT_DIR$" />
     <method />
   </configuration>
