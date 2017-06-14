@@ -107,10 +107,11 @@ class IsolateClient implements Client {
         timer.cancel();
       }
 
+      var errorMessage = response.metaData['message'];
       switch (response.statusCode) {
         case status.OK:
           if (!response.body.containsKey('result'))
-            completer.completeError(new CherubimException(
+            completer.completeError(new CherubimException(errorMessage ??
                 'The server reported a successful operation, but did not return any value.'));
           completer.complete(JSON.decode(response.body['result']));
           break;
@@ -121,15 +122,19 @@ class IsolateClient implements Client {
           completer.complete(true);
           break;
         case status.MALFORMED:
-          completer.completeError(new CherubimException(
+          completer.completeError(new CherubimException(errorMessage ??
               'Your request was malformed, and thus the server refused to process it.'));
+          break;
+        case status.NO_SUCH_KEY:
+          completer.completeError(
+              errorMessage ?? 'You tried to read or write a nonexistent key.');
           break;
         case status.NOT_FOUND:
           completer.complete(false);
           break;
         case status.SERVER_ERROR:
-          completer.completeError(
-              new CherubimException('An internal server error occurred.'));
+          completer.completeError(new CherubimException(
+              errorMessage ?? 'An internal server error occurred.'));
           break;
         default:
           completer.completeError(new CherubimException(

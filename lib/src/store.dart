@@ -1,69 +1,138 @@
+import 'response_impl.dart';
+import 'response_status.dart' as status;
+
+final RegExp _rgxInt = new RegExp(r'[0-9]+');
+
 /// Stores the data within a Cherubim instance.
 class Store {
   final Map<String, dynamic> _state = {};
 
-  get(String key) {
-    Map search = _state;
-    var split = key.split('.');
+  _resolveSearchTarget(initial, List<String> split) {
+    var search = initial;
+    if (split.length <= 1) return initial;
 
     for (int i = 0; i < split.length - 1; i++) {
-      var sub = split[i];
-      if (!search.containsKey(sub) || search[sub] is! Map) return null;
-      search = search[sub];
-    }
+      var query = split[i];
+      var intMatch = _rgxInt.firstMatch(query);
 
-    return search[split[split.length - 1]];
+      if (intMatch != null) {
+        if (search is List) {
+          return search[int.parse(intMatch[0])];
+        } else
+          throw new ResponseImpl(
+              statusCode: status.MALFORMED,
+              metaData: {'message': 'Cannot take numerical index of $search.'});
+      } else if (search is Map) {
+        if (search.containsKey(query))
+          return search[query];
+        else
+          search = (search[query] = {});
+      } else
+        return null;
+    }
+  }
+
+  _resolveKey(search, String key) {
+    if (search == null) return null;
+    var intMatch = _rgxInt.firstMatch(key);
+
+    if (intMatch != null) {
+      if (search is List) {
+        return search[int.parse(intMatch[0])];
+      } else
+        throw new ResponseImpl(
+            statusCode: status.MALFORMED,
+            metaData: {'message': 'Cannot take numerical index of $search.'});
+    } else if (search is Map) {
+      return search[key];
+    } else
+      throw new ResponseImpl(
+          statusCode: status.MALFORMED,
+          metaData: {'message': 'Cannot take index of $search.'});
+  }
+
+  get(String key) {
+    var split = key.split('.');
+    var target = _resolveSearchTarget(_state, split);
+    var result = _resolveKey(target, split.last);
+    if (result == null) throw new ResponseImpl(statusCode: status.NO_SUCH_KEY);
+    return result;
   }
 
   set(String key, value) {
-    Map search = _state;
     var split = key.split('.');
+    var target = _resolveSearchTarget(_state, split);
 
-    for (int i = 0; i < split.length - 1; i++) {
-      var sub = split[i];
-      if (!search.containsKey(sub) || search[sub] is! Map) {
-        search = search[sub] = {};
-      } else
-        search = search[sub];
-    }
-
-    return search[split[split.length - 1]] = value;
+    if (target is List)
+      throw new ResponseImpl(statusCode: status.MALFORMED, metaData: {
+        'message':
+            'Cannot `set` keys in a list. Send a LIST_ADD request instead.'
+      });
+    else if (target is Map)
+      return target[split.last] = value;
+    else
+      throw new ResponseImpl(
+          statusCode: status.MALFORMED,
+          metaData: {'message': 'Cannot `set` values within $target.'});
   }
 
   delete(String key) {
-    Map search = _state;
     var split = key.split('.');
+    var target = _resolveSearchTarget(_state, split);
 
-    for (int i = 0; i < split.length - 1; i++) {
-      var sub = split[i];
-      if (!search.containsKey(sub) || search[sub] is! Map) return null;
-      search = search[sub];
-    }
-
-    return search.remove(split[split.length - 1]);
+    if (target is List) {
+      var query = split.last;
+      var intMatch = _rgxInt.firstMatch(query);
+      if (intMatch != null) {
+        return target.removeAt(int.parse(intMatch[0]));
+      }
+      throw new ResponseImpl(
+          statusCode: status.MALFORMED,
+          metaData: {'message': 'Cannot remove key "$query" from a list.'});
+    } else if (target is Map) {
+      return target.remove(split.last);
+    } else
+      throw new ResponseImpl(
+          statusCode: status.MALFORMED,
+          metaData: {'message': 'Cannot delete entry from $target.'});
   }
 
   /// Returns true if the given [key] exists.
   bool exists(String key) {
-    Map search = _state;
     var split = key.split('.');
+    var target = _resolveSearchTarget(_state, split);
 
-    for (int i = 0; i < split.length - 1; i++) {
-      var sub = split[i];
-      if (!search.containsKey(sub) || search[sub] is! Map) return false;
-      search = search[sub];
+    if (target is Map)
+      return target.containsKey(key);
+    else if (target is List) {
+      var intMatch = _rgxInt.firstMatch(key);
+      if (intMatch != null) {
+        int n = int.parse(intMatch[0]);
+        return target.isNotEmpty && n < target.length;
+      }
+      return target.contains(key);
+    } else {
+      throw new ResponseImpl(
+          statusCode: status.MALFORMED,
+          metaData: {'message': 'Cannot take an index of $target.'});
     }
-
-    return search.containsKey(split[split.length - 1]);
   }
 
   increment(String key) {
+    if (!exists(key)) {
+      return set(key, 1);
+    }
+
     var cur = get(key);
     if (cur is int) return set(key, cur + 1);
     return set(key, 1);
   }
 
   decrement(String key) {
+    if (!exists(key)) {
+      return set(key, 1);
+    }
+
     var cur = get(key);
     if (cur is int) return set(key, cur - 1);
     return set(key, 1);

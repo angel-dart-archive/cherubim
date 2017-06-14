@@ -19,6 +19,9 @@ const int UNAUTHORIZED = 403;
 /// The requested key does not exist.
 const int NOT_FOUND = 404;
 
+/// The user tried to read/write a nonexistent key.
+const int NO_SUCH_KEY = 402;
+
 /// An internal server error prevent the response from completing successfully.
 const int SERVER_ERROR = 500;
 

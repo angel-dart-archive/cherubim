@@ -4,6 +4,7 @@ import 'package:pool/pool.dart';
 import 'adapter.dart';
 import 'request.dart';
 import 'request_method.dart' as method;
+import 'response.dart';
 import 'response_impl.dart';
 import 'response_status.dart' as status;
 import 'store.dart';
@@ -152,6 +153,13 @@ class Server {
           sendMalformed();
           break;
       }
+    } on ResponseImpl catch (response) {
+      user.send(response..requestId = request.id);
+    } on RangeError {
+      user.send(new ResponseImpl(
+          statusCode: status.MALFORMED,
+          requestId: request.id,
+          metaData: {'message': 'Index out of range.'}));
     } catch (e) {
       user.send(new ResponseImpl(
           statusCode: status.SERVER_ERROR, requestId: request.id));
